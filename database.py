@@ -1,18 +1,24 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import sqlite3
+from sqlite3 import Error
+import Models
 
-engine = create_engine('sqlite:////database.db')
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
-Base = declarative_base()
-Base.query = db_session.query_property()
+def create_table(conn, create_table_sql):
+    try:
+        c = conn.cursor()
+        c.execute(create_table_sql)
+    except Error as e:
+        print(e)
 
-def init_db():
-    # import all modules here that might define models so that
-    # they will be registered properly on the metadata.  Otherwise
-    # you will have to import them first before calling init_db()
-    Base.metadata.create_all(bind=engine)
+def create_connection(db_file):
+    """ create a database connection to a SQLite database """
+    try:
+        conn = sqlite3.connect(db_file)
+        create_table(conn, 'CREATE TABLE User (user_id text PRIMARY KEY NOT NULL UNIQUE, first_name text NOT NULL, last_name text NOT NULL, phone text UNIQUE)')
+        print(sqlite3.version)
+    except Error as e:
+        print(e)
+    finally:
+        conn.close()
 
-init_db()
+if __name__ == '__main__':
+    create_connection('restaurantRating.db')
