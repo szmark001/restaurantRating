@@ -9,11 +9,27 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
+def construct_query(table, query_model):
+    query = 'CREATE TABLE'
+    query += ' ' + table
+    query += '('
+    for column in query_model:
+        query += column + ' ' + query_model[column]['type']
+        if query_model[column]['options']:
+            query += ' ' + query_model[column]['options']
+        query += ','
+    if query[len(query)-1] == ',':
+        query = query[:len(query)-1]
+    query += ')'
+    return query
+
+
 def create_connection(db_file):
     """ create a database connection to a SQLite database """
     try:
         conn = sqlite3.connect(db_file)
-        create_table(conn, 'CREATE TABLE User (user_id text PRIMARY KEY NOT NULL UNIQUE, first_name text NOT NULL, last_name text NOT NULL, phone text UNIQUE)')
+        for table in Models.models:
+            create_table(conn, construct_query(table, Models.models[table]))
         print(sqlite3.version)
     except Error as e:
         print(e)
